@@ -1,4 +1,6 @@
-FROM postgres:10-alpine
+FROM postgres:10
 LABEL MAINTAINER="Artyom Nosov <chip@unixstyle.ru>"
 
-RUN apk add --no-cache postgis
+RUN apt-get update \
+ && apt-get install -y postgis
+ && rm -rf /var/lib/apt/lists/*
