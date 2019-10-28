@@ -1,11 +1,8 @@
 FROM postgres:10-alpine
 LABEL MAINTAINER="Artyom Nosov <chip@unixstyle.ru>"
 
-# MAINTAINER Régis Belson <me@regisbelson.fr>
-# https://github.com/appropriate/docker-postgis/blob/f6d28e4a1871b1f72e1c893ff103f10b6d7cb6e1/10-2.4/alpine/Dockerfile
-
-ENV POSTGIS_VERSION 2.4.3
-ENV POSTGIS_SHA256 b9754c7b9cbc30190177ec34b570717b2b9b88ed271d18e3af68eca3632d1d95
+ENV POSTGIS_VERSION 2.5.3
+ENV POSTGIS_SHA256 72e8269d40f981e22fb2b78d3ff292338e69a4f5166e481a77b015e1d34e559a
 
 RUN set -ex \
     \
@@ -14,7 +11,7 @@ RUN set -ex \
         openssl \
         tar \
     \
-    && wget -O postgis.tar.gz "https://github.com/postgis/postgis/archive/$POSTGIS_VERSION.tar.gz" \
+    && wget -O postgis.tar.gz "http://download.osgeo.org/postgis/source/postgis-$POSTGIS_VERSION.tar.gz" \
     && echo "$POSTGIS_SHA256 *postgis.tar.gz" | sha256sum -c - \
     && mkdir -p /usr/src/postgis \
     && tar \
@@ -32,29 +29,32 @@ RUN set -ex \
         libtool \
         libxml2-dev \
         make \
+        pcre-dev \
         perl \
     \
     && apk add --no-cache --virtual .build-deps-testing \
         --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
         gdal-dev \
         geos-dev \
-        proj4-dev \
+        proj-dev \
         protobuf-c-dev \
     && cd /usr/src/postgis \
     && ./autogen.sh \
-# configure options taken from:
-# https://anonscm.debian.org/cgit/pkg-grass/postgis.git/tree/debian/rules?h=jessie
     && ./configure \
-#       --with-gui \
+        --prefix=/usr \
+        --disable-gtktest \
+        --disable-nls \
+        --disable-rpath \
     && make \
     && make install \
     && apk add --no-cache --virtual .postgis-rundeps \
         json-c \
+        pcre \
     && apk add --no-cache --virtual .postgis-rundeps-testing \
         --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
         geos \
         gdal \
-        proj4 \
+        proj \
         protobuf-c \
     && cd / \
     && rm -rf /usr/src/postgis \
